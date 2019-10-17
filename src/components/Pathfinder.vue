@@ -8,12 +8,18 @@
 
     <div id="pathfinder">
       <div class="row" v-for="row in grid">
-        <div v-for="nodeObject in row" id="node" :class="{
-          'is-start-node' : nodeObject.isStart,
-          'is-finish-node' : nodeObject.isFinish,
-          'is-visited-node' : nodeObject.isVisited,
-          'is-path' : nodeObject.isPath,
-        }">
+        <div v-for="nodeObject in row"
+             id="node"
+             @mousedown="handleMouseDown(nodeObject.row, nodeObject.col)"
+             @mouseenter="handleMouseEnter(nodeObject.row, nodeObject.col)"
+             @mouseup="handleMouseUp"
+             :class="{
+              'is-start-node' : nodeObject.isStart,
+              'is-finish-node' : nodeObject.isFinish,
+              'is-visited-node' : nodeObject.isVisited,
+              'is-path' : nodeObject.isPath,
+              'is-wall' : nodeObject.isWall,
+             }">
         </div>
       </div>
     </div>
@@ -28,6 +34,7 @@
     name: 'Pathfinder',
     data() {
       return {
+        mouseIsPressed: false,
         disableRunBtn: false,
         disableResetBtn: false,
         grid: [],
@@ -72,6 +79,22 @@
             }
           }, 5 * i)
         }
+      },
+      handleMouseDown(row, col) {
+        this.mouseIsPressed = true;
+        this.getNewGridWithWallToggled(row, col);
+      },
+      handleMouseEnter(row, col) {
+        if (this.mouseIsPressed) {
+          this.getNewGridWithWallToggled(row, col);
+        }
+      },
+      handleMouseUp() {
+        this.mouseIsPressed = false;
+      },
+      getNewGridWithWallToggled(row, col) {
+        this.grid[row][col].isWall = true;
+        this.grid = [...this.grid];
       },
       async runDijkstra() {
         this.disableRunBtn = true;
@@ -157,6 +180,10 @@
 
       &.is-finish-node {
         background-color: aqua;
+      }
+
+      &.is-wall {
+        background-color: #6d1f1f;
       }
 
       &:hover {
