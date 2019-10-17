@@ -1,7 +1,10 @@
 <template>
   <div>
 
-    <button id="run-btn" @click="runDijkstra()">Run Dijkstra</button>
+    <div class="header">
+      <button :disabled="disableRunBtn" class="run-btn btn" @click="runDijkstra()">Run Dijkstra</button>
+      <button :disabled="disableResetBtn" class="reset-btn btn" @click="reset()">Reset</button>
+    </div>
 
     <div id="pathfinder">
       <div class="row" v-for="row in grid">
@@ -25,6 +28,8 @@
     name: 'Pathfinder',
     data() {
       return {
+        disableRunBtn: false,
+        disableResetBtn: false,
         grid: [],
         rowCount: 20,
         colCount: 50
@@ -42,6 +47,11 @@
           }
         }
       },
+      reset() {
+        this.initGrid();
+        this.grid = [...this.grid];
+        this.disableRunBtn = false;
+      },
       animateDijkstra(visitedNodesInOrder, shortestPathNodesInOrder) {
         for (let i = 0; i < visitedNodesInOrder.length; i++) {
           setTimeout(() => {
@@ -49,21 +59,24 @@
             this.grid[node.row][node.col].isVisited = true;
             this.grid = [...this.grid];
             if (visitedNodesInOrder.length - 1 === i) {
-              this.animatePath(shortestPathNodesInOrder);
+              for (let j = 0; j < shortestPathNodesInOrder.length; j++) {
+                setTimeout(() => {
+                  const innerNode = shortestPathNodesInOrder[j];
+                  this.grid[innerNode.row][innerNode.col].isPath = true;
+                  this.grid = [...this.grid];
+                  if (shortestPathNodesInOrder.length - 1 === j) {
+                    this.disableResetBtn = false;
+                  }
+                }, 30 * j)
+              }
             }
-          }, 10 * i)
-        }
-      },
-      animatePath(shortestPathNodesInOrder) {
-        for (let j = 0; j < shortestPathNodesInOrder.length; j++) {
-          setTimeout(() => {
-            const innerNode = shortestPathNodesInOrder[j];
-            this.grid[innerNode.row][innerNode.col].isPath = true;
-            this.grid = [...this.grid];
-          }, 30 * j)
+          }, 5 * i)
         }
       },
       async runDijkstra() {
+        this.disableRunBtn = true;
+        this.disableResetBtn = true;
+
         const startNode = this.grid[MainService.START_ROW][MainService.START_COL];
         const finishNode = this.grid[MainService.FINISH_ROW][MainService.FINISH_COL];
 
@@ -83,8 +96,7 @@
 
 <style lang="scss">
 
-  #run-btn {
-    margin-left: 6px;
+  .btn {
     margin-bottom: 10px;
     outline: none;
     background: none;
@@ -96,6 +108,24 @@
       color: white;
       border: 1px solid #59ce79;
       background-color: #59ce79;
+    }
+
+    &[disabled] {
+      background-color: #ebebeb;
+
+      &:hover {
+        color: rgb(128, 128, 128);
+        border: 1px solid #cecece;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .header {
+    margin-left: 6px;
+
+    .run-btn {
+      margin-right: 6px;
     }
   }
 
