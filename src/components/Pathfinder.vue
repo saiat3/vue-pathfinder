@@ -9,6 +9,7 @@
           'is-start-node' : nodeObject.isStart,
           'is-finish-node' : nodeObject.isFinish,
           'is-visited-node' : nodeObject.isVisited,
+          'is-path' : nodeObject.isPath,
         }">
         </div>
       </div>
@@ -24,7 +25,6 @@
     name: 'Pathfinder',
     data() {
       return {
-        tmp: [],
         grid: [],
         rowCount: 20,
         colCount: 50
@@ -42,27 +42,40 @@
           }
         }
       },
-      animateDijkstra(visitedNodesInOrder) {
+      animateDijkstra(visitedNodesInOrder, shortestPathNodesInOrder) {
         for (let i = 0; i < visitedNodesInOrder.length; i++) {
           setTimeout(() => {
             const node = visitedNodesInOrder[i];
             this.grid[node.row][node.col].isVisited = true;
             this.grid = [...this.grid];
-          }, 30 * i)
+            if (visitedNodesInOrder.length - 1 === i) {
+              this.animatePath(shortestPathNodesInOrder);
+            }
+          }, 10 * i)
         }
       },
-
-
+      animatePath(shortestPathNodesInOrder) {
+        for (let j = 0; j < shortestPathNodesInOrder.length; j++) {
+          setTimeout(() => {
+            const innerNode = shortestPathNodesInOrder[j];
+            this.grid[innerNode.row][innerNode.col].isPath = true;
+            this.grid = [...this.grid];
+          }, 30 * j)
+        }
+      },
       async runDijkstra() {
         const startNode = this.grid[MainService.START_ROW][MainService.START_COL];
         const finishNode = this.grid[MainService.FINISH_ROW][MainService.FINISH_COL];
+
         let visitedNodesInOrder = await DijkstraService.dijkstra(this.grid, startNode, finishNode);
+        let shortestPathNodesInOrder = await DijkstraService.getNodesInShortestPathOrder(finishNode);
+
         for (let i = 0; i < this.grid.length; i++) {
           for (let j = 0; j < this.grid[i].length; j++) {
             this.grid[i][j].isVisited = false;
           }
         }
-        this.animateDijkstra(visitedNodesInOrder);
+        this.animateDijkstra(visitedNodesInOrder, shortestPathNodesInOrder);
       }
     }
   }
@@ -102,6 +115,10 @@
 
       &.is-visited-node {
         background-color: green;
+      }
+
+      &.is-path {
+        background-color: #fcda19;
       }
 
       &.is-start-node {
