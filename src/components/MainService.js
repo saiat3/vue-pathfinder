@@ -1,6 +1,6 @@
 const START_ROW = 10;
 const START_COL = 10;
-const FINISH_ROW = 10;
+const FINISH_ROW = 16;
 const FINISH_COL = 40;
 
 const createNode = (col, row) => {
